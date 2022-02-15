@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
 import {Hero} from '../../shared/models/hero';
-import {Observable} from 'rxjs';
 import {HeroService} from "../../shared/services/hero.service";
 import {MessageService} from "../../shared/services/message.service";
 
@@ -11,7 +10,7 @@ import {MessageService} from "../../shared/services/message.service";
 })
 
 export class HeroesComponent implements OnInit {
-  heroes: Observable<Hero[]>;
+  heroes: Hero[];
   public selectedHero?: Hero;
 
   constructor(
@@ -24,13 +23,31 @@ export class HeroesComponent implements OnInit {
     this.getHeroes();
   }
 
+  public add(name: string): void {
+    name = name.trim();
+
+    if (!name) {
+      return;
+    }
+
+    this.heroService.addHero({name} as Hero)
+      .subscribe(hero => {
+        this.heroes.push(hero);
+      });
+  }
+
   public onSelect(selectedHero: Hero): void {
     this.selectedHero = selectedHero;
     this.messageService.add(`HeroesComponent: Selected hero id=${selectedHero.id}`);
   }
 
   public getHeroes(): void {
-    this.heroes = this.heroService.getHeroes();
+    this.heroService.getHeroes().subscribe(heroes => this.heroes = heroes);
+  }
+
+  public delete(hero: Hero): void {
+    this.heroes = this.heroes.filter(item => item !== hero);
+    this.heroService.deleteHero(hero.id);
   }
 
   // // same as above but above needs | async pipe in html while this one doesn't
